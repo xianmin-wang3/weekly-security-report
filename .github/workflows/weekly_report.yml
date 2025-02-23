@@ -1,0 +1,27 @@
+name: Weekly Security Report  # 工作流程名稱
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'  # 每週一 UTC 01:00（台灣時間 09:00）
+
+  workflow_dispatch:  # 允許手動執行
+
+jobs:
+  generate_report:
+    runs-on: ubuntu-latest  # 運行環境
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  # 下載專案
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'  # 設定 Python 版本
+
+      - name: Install dependencies
+        run: pip install feedparser requests schedule
+
+      - name: Run Python script
+        env:
+          LINE_TOKEN: ${{ secrets.LINE_TOKEN }}  # 使用 GitHub Secrets
+        run: python generate_report.py  # 執行腳本
