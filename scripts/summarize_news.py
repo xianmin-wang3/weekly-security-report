@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+from groq import Groq
 
 # 獲取 Groq API Key
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -32,7 +33,7 @@ def summarize_text(text):
 
     payload = {
         "model": "llama3-8b-8192",  # Groq API 模型
-        "messages": [{"role": "user", "content": f"請用簡潔的方式總結這篇文章: {text}"}],
+        "messages": [{"role": "user", "content": f"請用簡潔的方式總結這篇文章(使用繁體中文回答): {text}"}],
         "temperature": 0.5
     }
 
@@ -52,7 +53,7 @@ def summarize_text(text):
 def summarize_news():
     """ 總結所有新聞內容 """
     news_data = load_news()
-    summarized_news = []
+    summaries = []
 
     for article in news_data:
         title = article.get("title", "無標題")
@@ -65,7 +66,7 @@ def summarize_news():
         print(f"📄 總結文章: {title}")
         summary = summarize_text(content)
 
-        summarized_news.append({
+        summaries.append({
             "title": title,
             "summary": summary,
             "link": article.get("link", "#")  # 保留原始新聞連結
