@@ -36,6 +36,13 @@ jobs:
         env:             
              GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
+      - name: 上傳摘要後的新聞 JSON（會覆蓋舊檔案）
+        uses: actions/upload-artifact@v4
+        with:
+          name: ithome-news-summary
+          path: data/summaries.json
+          retention-days: 7  # 可選，設定保留天數
+
       - name: 生成簡報
         run: python scripts/generate_slides.py
 
