@@ -32,4 +32,6 @@ jobs:
 
       - name: 發送通知
         run: python scripts/send_notification.py
+        env:
+             LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
 
