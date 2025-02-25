@@ -26,6 +26,8 @@ jobs:
 
       - name: AI 總結新聞
         run: python scripts/summarize_news.py
+        env:             
+             GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: 生成簡報
         run: python scripts/generate_slides.py
