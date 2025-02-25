@@ -1,5 +1,4 @@
 import os
-import requests
 import json
 from groq import Groq
 
@@ -10,12 +9,14 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("❌ 環境變數 GROQ_API_KEY 未設定！請檢查 GitHub Secrets 或 .env 檔案")
 
-# 讀取新聞內容
+# 初始化 Groq 客戶端
+client = Groq(api_key=GROQ_API_KEY)
+
 NEWS_FILE = "data/news.json"  # 原始新聞檔案
 SUMMARY_FILE = "data/summaries.json"  # 儲存摘要結果
 
 def load_news():
-    """ 讀取原始新聞資料 """
+    """讀取原始新聞資料"""
     if not os.path.exists(NEWS_FILE):
         raise FileNotFoundError(f"❌ 找不到新聞檔案: {NEWS_FILE}")
     
@@ -23,35 +24,26 @@ def load_news():
         return json.load(f)
 
 def summarize_text(text):
-    """ 使用 Groq API 總結新聞內容 """
-    api_url = "https://api.groq.com/openai/v1/chat/completions"
-    
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "llama3-8b-8192",  # Groq API 模型
-        "messages": [{"role": "user", "content": f"請用簡潔的方式總結這篇文章(使用繁體中文回答): {text}"}],
-        "temperature": 0.5
-    }
-
+    """使用 Groq API 總結新聞內容"""
     try:
-        response = requests.post(api_url, headers=headers, json=payload)
-        response.raise_for_status()  # 檢查是否有 HTTP 錯誤
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "你是個有幫助的助手。"},
+                {"role": "user", "content": f"請用簡潔的方式總結這篇文章(使用繁體中文回答): {text}"}
+            ],
+            model="llama-3.3-70b-versatile",
+        )
 
-        data = response.json()
-        summary = data["choices"][0]["message"]["content"]
+        summary = chat_completion.choices[0].message.content
         print("✅ 成功獲取摘要")
         return summary
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         print(f"❌ API 請求錯誤: {e}")
         return "無法獲取摘要"
 
 def summarize_news():
-    """ 總結所有新聞內容 """
+    """總結所有新聞內容"""
     news_data = load_news()
     summaries = []
 
@@ -81,3 +73,4 @@ def summarize_news():
 
 if __name__ == "__main__":
     summarize_news()
+
