@@ -22,15 +22,15 @@ jobs:
         run: pip install requests beautifulsoup4 groq
 
       - name: 獲取最新 iThome 資安新聞
-        run: python fetch_news.py  # 執行爬取新聞的腳本
+        run: python scripts/fetch_news.py  # 執行爬取新聞的腳本
 
       - name: 總結新聞內容（Groq API）
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python summarize_news.py  # 執行 Groq API 摘要腳本
+        run: python scripts/summarize_news.py  # 執行 Groq API 摘要腳本
 
       - name: 生成 Marp 簡報 Markdown
-        run: python generate_report.py  # 執行 Marp 簡報腳本
+        run: python scripts/generate_report.py  # 執行 Marp 簡報腳本
 
       # 設定 Node.js 來安裝 Marp CLI
       - name: 設定 Node.js 環境
@@ -74,4 +74,4 @@ jobs:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-        run: python send_line_notify.py
+        run: python scripts/send_line_notify.py
