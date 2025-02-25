@@ -18,7 +18,8 @@ jobs:
           python-version: '3.9'
 
       - name: 安裝 Python 套件
-        run: pip install requests openai markdown
+        run: |
+          pip install -r requirements.txt
 
       - name: 爬取新聞
         run: python scripts/fetch_news.py
