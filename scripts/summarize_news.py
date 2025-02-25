@@ -24,7 +24,7 @@ def load_news():
 
 def summarize_text(text):
     """ 使用 Groq API 總結新聞內容 """
-    api_url = "https://api.groq.com/v1/chat/completions"
+    api_url = "https://api.groq.com/openai/v1/chat/completions"
     
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
