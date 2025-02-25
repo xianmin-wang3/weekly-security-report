@@ -1,6 +1,11 @@
 import os
 import json
+import time
 from groq import Groq
+
+# 設定檔案路徑
+NEWS_FILE = "data/news.json"  # 原始新聞 JSON 檔案
+SUMMARY_FILE = "data/summaries.json"  # 總結結果 JSON 檔案
 
 # 獲取 Groq API Key
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -12,9 +17,6 @@ if not GROQ_API_KEY:
 # 初始化 Groq 客戶端
 client = Groq(api_key=GROQ_API_KEY)
 
-NEWS_FILE = "data/news.json"  # 原始新聞檔案
-SUMMARY_FILE = "data/summaries.json"  # 儲存摘要結果
-
 def load_news():
     """讀取原始新聞資料"""
     if not os.path.exists(NEWS_FILE):
@@ -23,23 +25,31 @@ def load_news():
     with open(NEWS_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def summarize_text(text):
+def summarize_text(title, link):
     """使用 Groq API 總結新聞內容"""
     try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "你是個有幫助的助手。"},
-                {"role": "user", "content": f"請用簡潔的方式總結這篇文章(使用繁體中文回答): {text}"}
-            ],
-            model="llama-3.3-70b-versatile",
+        # 提示詞讓 Groq 直接從新聞連結生成摘要（如果網站允許）
+        prompt = (
+            f"請用繁體中文簡潔地總結這篇新聞文章:\n\n"
+            f"標題: {title}\n"
+            f"新聞連結: {link}\n"
+            f"請提供 3-5 句的摘要，並保留新聞的重點內容。"
         )
 
-        summary = chat_completion.choices[0].message.content
-        print("✅ 成功獲取摘要")
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "你是個專業的新聞摘要助手，請提供簡明扼要的新聞摘要。"},
+                {"role": "user", "content": prompt}
+            ],
+            model="llama3-70b",  # 確保 Groq 支援的模型
+        )
+
+        summary = chat_completion.choices[0].message.content.strip()
+        print(f"✅ 總結完成: {title}")
         return summary
 
     except Exception as e:
-        print(f"❌ API 請求錯誤: {e}")
+        print(f"❌ API 請求錯誤 ({title}): {e}")
         return "無法獲取摘要"
 
 def summarize_news():
@@ -49,20 +59,15 @@ def summarize_news():
 
     for article in news_data:
         title = article.get("title", "無標題")
-        content = article.get("content", "")
-
-        if not content:
-            print(f"⚠️ 文章 {title} 沒有內容，跳過...")
-            continue
+        link = article.get("link", "#")
 
         print(f"📄 總結文章: {title}")
-        summary = summarize_text(content)
 
-        summaries.append({
-            "title": title,
-            "summary": summary,
-            "link": article.get("link", "#")  # 保留原始新聞連結
-        })
+        summary = summarize_text(title, link)
+        summaries.append({"title": title, "summary": summary, "link": link})
+
+        # 避免 API 請求過快導致限流
+        time.sleep(2)  # 適當延遲以降低 API 請求頻率
 
     # 儲存摘要結果
     os.makedirs(os.path.dirname(SUMMARY_FILE), exist_ok=True)
@@ -73,4 +78,3 @@ def summarize_news():
 
 if __name__ == "__main__":
     summarize_news()
-
