@@ -24,6 +24,13 @@ jobs:
       - name: 爬取新聞
         run: python scripts/fetch_news.py
 
+      - name: 上傳最新新聞 JSON（會覆蓋舊檔案）
+        uses: actions/upload-artifact@v4
+        with:
+          name: ithome-news  # 保持相同名稱，每次執行時自動覆蓋
+          path: data/news.json
+          retention-days: 7  # 可選，設定保留天數（7 天後自動刪除）
+
       - name: AI 總結新聞
         run: python scripts/summarize_news.py
         env:             
