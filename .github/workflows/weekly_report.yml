@@ -1,81 +1,83 @@
-name: Generate Weekly Security Report
+name: Weekly Security Report
 
 on:
   schedule:
-    - cron: "0 0 * * 1"  # 每週一 00:00 UTC 自動執行（台灣時間 08:00）
-  workflow_dispatch:  # 允許手動觸發
+    - cron: '0 0 * * 1'  # 每週一 00:00 UTC（台灣時間 08:00）
+  workflow_dispatch:  # 允許手動執行
 
 jobs:
   fetch-and-summarize-news:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 取得 Repository
+      # 1️⃣ 取得專案程式碼
+      - name: 🔄 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 設定 Python 環境
+      # 2️⃣ 設定 Python 環境
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
-      - name: 安裝 Python 依賴套件
-        run: pip install requests beautifulsoup4 groq
+      # 3️⃣ 安裝 Python 依賴
+      - name: 📦 Install Dependencies
+        run: |
+          pip install requests beautifulsoup4 groq pdf2image pillow
 
-      - name: 獲取最新 iThome 資安新聞
-        run: python scripts/fetch_news.py  # 執行爬取新聞的腳本
+      # 4️⃣ 抓取 iThome 資安新聞
+      - name: 🌐 Fetch Security News
+        run: python scripts/fetch_news.py
 
-      - name: 總結新聞內容（Groq API）
+      # 5️⃣ 使用 Groq API 生成新聞摘要
+      - name: 📝 Summarize News with Groq API
+        run: python scripts/summarize_news.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python scripts/summarize_news.py  # 執行 Groq API 摘要腳本
 
-      - name: 生成 Marp 簡報 Markdown
-        run: python scripts/generate_slides.py  # 執行 Marp 簡報腳本
+      # 6️⃣ 產生 Marp 幻燈片 Markdown
+      - name: 🎨 Generate Marp Slides
+        run: python scripts/generate_slides.py
 
-      # 設定 Node.js 來安裝 Marp CLI
-      - name: 設定 Node.js 環境
+      # 7️⃣ 設定 Node.js 環境
+      - name: 🚀 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"  # 安裝 Node.js 18 LTS 版本
+          node-version: '18'
 
-      - name: 安裝 Marp CLI
-        run: npm install -g @marp-team/marp-cli  # 安裝 Marp CLI
+      # 8️⃣ 安裝 Marp CLI
+      - name: 📦 Install Marp CLI
+        run: npm install -g @marp-team/marp-cli
 
-      - name: 轉換 Markdown 為 PDF
-        run: marp data/report.md --pdf --output data/security_report.pdf  # 生成 PDF
+      # 9️⃣ 轉換 Marp Markdown 為 PDF
+      - name: 📄 Convert Markdown to PDF
+        run: marp data/report.md --pdf --output data/security_report.pdf
 
-      # 上傳新聞 JSON（原始新聞）
-      - name: 上傳新聞 JSON
+      # 🔟 轉換 PDF 為 PNG（預覽圖）
+      - name: 🖼 Convert PDF to Image
+        run: python scripts/convert_pdf_to_image.py  # 這是新加的腳本
+        continue-on-error: true  # 若轉換失敗，仍然繼續後續步驟
+
+      # 1️⃣1️⃣ 上傳文件到 GitHub Actions Artifacts
+      - name: ⬆ Upload Generated Files
         uses: actions/upload-artifact@v4
         with:
-          name: ithome-news
-          path: data/news.json
-          retention-days: 7
+          name: weekly-security-report
+          path: |
+            data/news.json
+            data/summaries.json
+            data/security_report.pdf
+            data/security_report.png  # 上傳圖片預覽
+          retention-days: 7  # 保留 7 天
 
-      # 上傳摘要 JSON（新聞摘要）
-      - name: 上傳摘要 JSON
-        uses: actions/upload-artifact@v4
-        with:
-          name: ithome-news-summary
-          path: data/summaries.json
-          retention-days: 7
-
-      # 上傳 PDF 簡報
-      - name: 上傳 PDF 簡報
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: data/security_report.pdf
-          retention-days: 7
-
-      - name: 部署報告到 GitHub Pages
+      # 1️⃣2️⃣ 部署到 GitHub Pages
+      - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./data  # 發布 data/ 目錄（包含 security_report.pdf）
+          publish_dir: data/
 
-      - name: 發送 LINE 通知
+      # 1️⃣3️⃣ 發送 LINE 通知（含圖片）
+      - name: 📢 Send LINE Notification
         run: python scripts/send_notification.py
         env:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
-    
