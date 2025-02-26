@@ -1,12 +1,9 @@
-name: Weekly Security Report
+name: 每週資安新聞周報
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # 每週一 00:00 UTC（台灣時間 08:00）執行
+    - cron: '0 0 * * 1'  # 每週一 00:00 UTC（台灣時間 08:00）
   workflow_dispatch:  # 允許手動觸發
-
-permissions:
-  contents: write  # 允許 Actions 推送內容到倉庫
 
 jobs:
   fetch-and-summarize-news:
@@ -21,21 +18,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 安裝 Python 依賴
+      - name: 安裝 Python 依賴套件
         run: pip install requests beautifulsoup4 groq
 
       - name: 抓取 iThome 資安新聞
         run: python scripts/fetch_news.py
 
-      - name: 總結新聞（Groq API）
+      - name: 產生新聞摘要（Groq API）
+        run: python scripts/summarize_news.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python scripts/summarize_news.py
 
       - name: 生成 Marp 幻燈片 Markdown
         run: python scripts/generate_slides.py
 
-      - name: 設置 Node.js
+      - name: 設置 Node.js 環境
         uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -46,7 +43,7 @@ jobs:
       - name: 轉換 Markdown 為 PDF
         run: marp data/report.md --pdf --output data/security_report.pdf
 
-      - name: 上傳生成的數據
+      - name: 上傳資料到 GitHub Actions Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: security-report
@@ -56,6 +53,14 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: data/
+          publish_dir: ./data
           publish_branch: gh-pages
-          enable_jekyll: false
+          force_orphan: true  # 確保為全新分支，避免歷史紀錄影響
+
+      - name: 等待 GitHub Pages 部署完成
+        run: sleep 10s  # 避免 GitHub Pages 部署未完成就發送通知
+
+      - name: 發送 LINE 通知
+        run: python scripts/send_notification.py
+        env:
+          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
