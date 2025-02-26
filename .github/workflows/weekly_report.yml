@@ -68,10 +68,14 @@ jobs:
           path: data/security_report.pdf
           retention-days: 7
 
-      # 發送 LINE Notify 通知
-      - name: 發送 LINE Notify 通知
+      - name: 部署報告到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./data  # 發布 data/ 目錄（包含 security_report.pdf）
+
+      - name: 發送 LINE 通知
+        run: python scripts/send_notification.py
         env:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: python scripts/send_notification.py
+    
