@@ -9,7 +9,7 @@ def send_line_notification():
         return
 
     message = "📢 資安週報已更新！請查看最新簡報："
-    pdf_url = "https://gary125.github.io/weekly-security-report/report.pdf"  # 改為 GitHub Pages URL
+    pdf_url = "https://gary125.github.io/weekly-security-report/security_report.pdf"  # 改為 GitHub Pages URL
 
     headers = {"Authorization": f"Bearer {LINE_NOTIFY_TOKEN}"}
     data = {"message": f"{message}\n{pdf_url}"}
