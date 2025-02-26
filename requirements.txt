@@ -1,5 +1,5 @@
 requests
 beautifulsoup4
-openai
-markdown
 groq
+pdf2image
+markdown
