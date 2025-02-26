@@ -30,7 +30,7 @@ jobs:
         run: python scripts/summarize_news.py  # 執行 Groq API 摘要腳本
 
       - name: 生成 Marp 簡報 Markdown
-        run: python scripts/generate_report.py  # 執行 Marp 簡報腳本
+        run: python scripts/generate_slides.py  # 執行 Marp 簡報腳本
 
       # 設定 Node.js 來安裝 Marp CLI
       - name: 設定 Node.js 環境
@@ -74,4 +74,4 @@ jobs:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-        run: python scripts/send_line_notify.py
+        run: python scripts/send_notification.py
