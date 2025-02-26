@@ -22,7 +22,7 @@ jobs:
           python-version: '3.10'
 
       - name: 安裝 Python 依賴套件
-        run: pip install requests beautifulsoup4 groq
+        run: pip install requests beautifulsoup4 groq pdf2image
 
       - name: 抓取 iThome 資安新聞
         run: python scripts/fetch_news.py
