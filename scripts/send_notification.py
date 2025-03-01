@@ -5,12 +5,13 @@ import os
 LINE_NOTIFY_TOKEN = os.getenv("LINE_NOTIFY_TOKEN")
 
 # 設定檔案路徑
-file_path = '../data/security_report.pdf'
+file_path = 'data/security_report.pdf'
 
-# 自動獲取 repo 名稱和 workflow run ID
+# 自動獲取 repo 名稱和 workflow run ID+Artifact_ID
 GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY")
 GITHUB_RUN_ID = os.getenv("GITHUB_RUN_ID")
-GITHUB_ARTIFACT_URL = f"https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}"
+GITHUB_Artifact_ID = os.getenv("GITHUB_Artifact_ID")
+GITHUB_ARTIFACT_URL = f"https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}/artifact/{GITHUB_Artifact_ID}"
 
 # LINE Notify API URL
 url = "https://notify-api.line.me/api/notify"
