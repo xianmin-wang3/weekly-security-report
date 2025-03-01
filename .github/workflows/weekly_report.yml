@@ -52,13 +52,16 @@ jobs:
       - name: 轉換 Markdown 為 PPTX
         run: marp ../data/report.md --pdf --output ../data/security_report.pptx
 
+      - name: List files in data directory
+        run: ls -l data/
+         
       - name: 上傳簡報檔案
         uses: actions/upload-artifact@v4
         with:
           name: security_reports
           path: |
-            security_report.pdf
-            security_report.pptx
+            data/security_report.pdf
+            data/security_report.pptx
 
       - name: 發送 LINE 通知
         run: python scripts/send_notification.py
