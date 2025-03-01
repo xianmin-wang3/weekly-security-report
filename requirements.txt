@@ -1,5 +1,6 @@
 requests
+json
 beautifulsoup4
+pandas
 groq
-pdf2image
 markdown
