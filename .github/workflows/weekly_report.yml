@@ -47,13 +47,16 @@ jobs:
         run: npm install -g @marp-team/marp-cli
 
       - name: 轉換 Markdown 為 PDF
-        run: marp ../data/report.md --pdf --output ../data/security_report.pdf
+        run: marp ../data/report.md --pdf --output data/security_report.pdf
 
       - name: 轉換 Markdown 為 PPTX
-        run: marp ../data/report.md --pdf --output ../data/security_report.pptx
+        run: marp ../data/report.md --pdf --output data/security_report.pptx
 
       - name: List files in data directory
         run: ls -l data/
+
+      - name: List files in data directory
+        run: ls -l ../data/  
          
       - name: 上傳簡報檔案
         uses: actions/upload-artifact@v4
