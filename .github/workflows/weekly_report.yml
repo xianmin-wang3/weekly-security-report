@@ -57,8 +57,8 @@ jobs:
         with:
           name: security_reports
           path: |
-            ../data/security_report.pdf
-            ../data/security_report.pptx
+            data/security_report.pdf
+            data/security_report.pptx
 
       - name: 發送 LINE 通知
         run: python scripts/send_notification.py
