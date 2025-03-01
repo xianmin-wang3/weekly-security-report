@@ -1,10 +1,9 @@
 import os
 import json
-import time
 from groq import Groq
 
-NEWS_FILE = "data/news.json"
-SUMMARY_FILE = "data/summaries.json"
+NEWS_FILE = "../data/security_news.json"
+SUMMARY_FILE = "../data/summaries.json"
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
@@ -20,53 +19,67 @@ def load_news():
     with open(NEWS_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def summarize_text(title, content):
-    """使用 Groq API 生成新聞摘要"""
+def summarize_all_news(news_data):
+    """使用 Groq API 生成整週資安新聞摘要"""
     try:
-        truncated_content = content[:1000]  # 限制內容長度，避免 API 超載
-        prompt = (
-            f"請用繁體中文簡潔地總結這篇新聞文章:\n\n"
-            f"標題: {title}\n"
-            f"內容: {truncated_content}...\n"
-            f"請提供 3-5 句的摘要，並保留新聞的重點內容。"
+        # 組合完整新聞內容
+        news_list = "\n\n".join(
+            [
+                f"標題: {article['title']}\n說明: {article['summary']}\n"
+                f"發布時間: {article['publish_date']}\n"
+                f"本日關注: {', '.join(article.get('preface', []))}\n"
+                f"資安攻擊與威脅: {', '.join(article.get('threats', []))}\n"
+                f"資安漏洞與修補: {', '.join(article.get('vulnerabilities', []))}\n"
+                f"資安防護: {', '.join(article.get('security_measures', []))}\n"
+                for article in news_data
+            ]
         )
+
+        print(f"📝 傳送給 Groq API 的新聞字數: {len(news_list)}")
+
+        prompt = f"""
+        你是專業的資安新聞摘要助手，我手邊整理了一週的資安新聞：
+        {news_list}
+
+        請依據以下面向，彙整出完整的資安週報：(務必記得編號，範例:1. **資安防護**)
+        1. 資安防護
+        2. 資安威脅態勢
+        3. 資安事件 (若有日期請標註)
+        4. 未來趨勢
+
+        這很重要，請確保資訊完整，一步一步思考後再給出完整的週報內容，並確保用繁體中文回答。
+        """
 
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "你是個專業的新聞摘要助手，請提供簡明扼要的新聞摘要。"},
+                {"role": "system", "content": "你是專業的資安新聞摘要助手，請按照要求整理資訊。"},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-70b",
+            model="llama-3.3-70b-versatile",
         )
 
         summary = chat_completion.choices[0].message.content.strip()
-        print(f"✅ 總結完成: {title}")
+        print("✅ 本週資安周報總結完成")
         return summary
 
     except Exception as e:
-        print(f"❌ API 請求錯誤 ({title}): {e}")
-        return "無法獲取摘要"
+        print(f"❌ API 請求錯誤: {e}")
+        return "無法獲取資安周報摘要"
 
 def summarize_news():
-    """對所有新聞進行摘要"""
+    """讀取所有新聞，生成整週資安新聞摘要"""
     news_data = load_news()
-    summaries = []
 
-    for article in news_data:
-        title = article.get("title", "無標題")
-        content = article.get("content", "")
+    print("📄 開始生成本週資安周報...")
+    summary = summarize_all_news(news_data)
 
-        print(f"📄 總結文章: {title}")
-        summary = summarize_text(title, content)
-        summaries.append({"title": title, "summary": summary, "link": article["link"]})
-
-        time.sleep(2)  # 避免 API 請求過快導致限流
+    summary_data = {"weekly_summary": summary}
 
     os.makedirs(os.path.dirname(SUMMARY_FILE), exist_ok=True)
     with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
-        json.dump(summaries, f, ensure_ascii=False, indent=4)
+        json.dump(summary_data, f, ensure_ascii=False, indent=4)
 
-    print(f"✅ 所有新聞摘要完成，已儲存至 {SUMMARY_FILE}")
+    print(f"✅ 本週資安周報已儲存至 {SUMMARY_FILE}")
 
 if __name__ == "__main__":
     summarize_news()
