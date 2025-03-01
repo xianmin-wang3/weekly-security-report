@@ -24,8 +24,11 @@ jobs:
       - name: 安裝 Python 依賴套件
         run: pip install -r requirements.txt
 
-      - name: 抓取 iThome 資安新聞
-        run: python scripts/fetch_news.py
+      - name: 抓取資安新聞連結
+        run: python scripts/fetch_news_link.py
+
+      - name: 抓取資安新聞
+        run: python scripts/fetch_news.py  
 
       - name: 產生新聞摘要（Groq API）
         run: python scripts/summarize_news.py
@@ -46,22 +49,22 @@ jobs:
       - name: 轉換 Markdown 為 PDF
         run: marp data/report.md --pdf --output data/security_report.pdf
 
+      - name: 轉換 Markdown 為 PPTX
+        run: marp data/report.md --pdf --output data/security_report.pptx  
+
       - name: 上傳資料到 GitHub Actions Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: security-report
           path: data/
 
-      - name: 部署到 GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: 上傳簡報檔案
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./data
-          publish_branch: gh-pages
-          force_orphan: true  # 確保為全新分支，避免歷史紀錄影響
-
-      - name: 等待 GitHub Pages 部署完成
-        run: sleep 10s  # 避免 GitHub Pages 部署未完成就發送通知
+          name: security_reports
+          path: |
+            data/security_report.pdf
+            data/security_report.pptx
 
       - name: 發送 LINE 通知
         run: python scripts/send_notification.py
