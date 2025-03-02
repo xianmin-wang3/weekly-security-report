@@ -1,38 +1,22 @@
 import requests
 import os
 
-# 讀取環境變數
+# 讀取環境變數中的 LINE Notify Token
 LINE_NOTIFY_TOKEN = os.getenv("LINE_NOTIFY_TOKEN")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # GitHub API Token
-GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY")
-GITHUB_RUN_ID = os.getenv("GITHUB_RUN_ID")
-GITHUB_ARTIFACT_ID = os.getenv("GITHUB_ARTIFACT_ID")
 
-# GitHub API 下載 Artifact URL
-GITHUB_ARTIFACT_URL = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/actions/artifacts/{GITHUB_ARTIFACT_ID}"
+# 設定 Markdown 檔案路徑
+MARKDOWN_FILE = "../data/report.md"
 
-# 下載檔案
-def download_artifact():
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
+# LINE Notify API URL
+LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify"
 
-    response = requests.get(GITHUB_ARTIFACT_URL, headers=headers)
-
-    if response.status_code == 200:
-        with open("security_report.zip", "wb") as f:
-            f.write(response.content)
-        print("✅ 成功下載 security-report.zip")
-        return "security_report.zip"
-    else:
-        print(f"❌ 下載 Artifact 失敗: {response.status_code}, {response.text}")
-        return None
-
-# 發送 LINE 通知
-def send_line_notify(file_path):
+def send_line_notify():
     if not LINE_NOTIFY_TOKEN:
         print("❌ 錯誤: 未設定 LINE_NOTIFY_TOKEN 環境變數")
+        return
+
+    if not os.path.exists(MARKDOWN_FILE):
+        print(f"❌ 錯誤: 檔案不存在: {MARKDOWN_FILE}")
         return
 
     # 設定 HTTP 標頭
@@ -40,24 +24,28 @@ def send_line_notify(file_path):
         "Authorization": f"Bearer {LINE_NOTIFY_TOKEN}"
     }
 
-    # 設定訊息
-    message = f"📢 資安新聞週報 📢\n\n最新資安新聞已整理完成！\n📂 附件下載：GitHub Artifact"
+    # 讀取 Markdown 內容
+    with open(MARKDOWN_FILE, "r", encoding="utf-8") as f:
+        markdown_content = f.read()
 
-    # 準備檔案發送
-    files = {"file": open(file_path, "rb")}
-    data = {"message": message}
+    # LINE Notify 限制訊息長度最多 1000 個字元
+    if len(markdown_content) > 1000:
+        markdown_content = markdown_content[:1000] + "...\n(內容過長，請查看完整報告)"
 
-    # 發送請求
-    response = requests.post("https://notify-api.line.me/api/notify", headers=headers, data=data, files=files)
+    # 設定要發送的訊息
+    data = {
+        "message": f"📢 資安新聞週報 📢\n\n{markdown_content}"
+    }
+
+    # 發送通知
+    response = requests.post(LINE_NOTIFY_URL, headers=headers, data=data)
 
     # 檢查回應
     if response.status_code == 200:
-        print("✅ 訊息與檔案已成功發送至 LINE！")
+        print("✅ 訊息已成功發送至 LINE！")
     else:
         print(f"❌ LINE Notify 發送失敗，錯誤碼: {response.status_code}, 錯誤訊息: {response.text}")
 
 if __name__ == "__main__":
-    file_path = download_artifact()
-    if file_path:
-        send_line_notify(file_path)
+    send_line_notify()
 
