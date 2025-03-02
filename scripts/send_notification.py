@@ -34,7 +34,7 @@ def send_line_notify():
 
     # 設定要發送的訊息
     data = {
-        "message": f"📢 資安新聞週報 📢\n\n{markdown_content}"
+        "message": f"{markdown_content}"
     }
 
     # 發送通知
