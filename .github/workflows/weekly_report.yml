@@ -50,23 +50,28 @@ jobs:
         run: marp ../data/report.md --pdf --output data/security_report.pdf
 
       - name: 轉換 Markdown 為 PPTX
-        run: marp ../data/report.md --pdf --output data/security_report.pptx
+        run: marp ../data/report.md --pptx --output data/security_report.pptx
 
-      - name: List files in data directory
-        run: ls -l data/
-
-      - name: List files in data directory
-        run: ls -l ../data/  
-         
       - name: 上傳簡報檔案
         uses: actions/upload-artifact@v4
         with:
-          name: security_reports
+          name: security_report
           path: |
             data/security_report.pdf
-            data/security_report.pptx
+            data/security_report.pptx     
+
+      - name: 獲取 Artifact ID
+        id: get_artifact
+        run: |
+          ARTIFACT_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+            | jq -r '.artifacts[] | select(.name=="security-report") | .id')
+
+          echo "Artifact ID: $ARTIFACT_ID"
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> $GITHUB_ENV
 
       - name: 發送 LINE 通知
         run: python scripts/send_notification.py
         env:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
+          GITHUB_ARTIFACT_ID: ${{ env.ARTIFACT_ID }}
