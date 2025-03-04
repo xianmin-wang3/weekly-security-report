@@ -43,16 +43,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: 安裝 Marp CLI
+      - name: 安裝 Marp CLI (請忽略此過程）
         run: npm install -g @marp-team/marp-cli
 
-      - name: 轉換 Markdown 為 PDF
+      - name: 轉換 Markdown 為 PDF (請忽略此過程）
         run: marp ../data/report.md --pdf --output data/security_report.pdf
 
-      - name: 轉換 Markdown 為 PPTX
+      - name: 轉換 Markdown 為 PPTX (請忽略此過程）
         run: marp ../data/report.md --pptx --output data/security_report.pptx
 
-      - name: 上傳簡報檔案
+      - name: 上傳簡報檔案（請忽略此過程）
         uses: actions/upload-artifact@v4
         with:
           name: security_report
