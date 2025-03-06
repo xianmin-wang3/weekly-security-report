@@ -38,6 +38,11 @@ jobs:
       - name: 生成 Marp 幻燈片 Markdown
         run: python scripts/generate_slides.py
 
+      - name: 發送 LINE 通知
+        run: python scripts/send_notification.py
+        env:
+          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}  
+
       - name: 設置 Node.js 環境
         uses: actions/setup-node@v4
         with:
