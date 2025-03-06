@@ -24,7 +24,7 @@ def send_discord_message():
 
     # 設定要發送的訊息
     payload = {
-        "content": f"📢 **資安新聞週報** 📢\n\n{markdown_content}"
+        "content": f"{markdown_content}"
     }
 
     # 發送到 Discord Webhook
