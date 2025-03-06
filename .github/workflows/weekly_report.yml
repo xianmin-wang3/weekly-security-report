@@ -44,7 +44,7 @@ jobs:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
 
       - name: 發送 Discord 通知
-        run: python scripts/send_notification.py
+        run: python scripts/send_notification_discord.py
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}    
 
