@@ -39,7 +39,7 @@ jobs:
         run: python scripts/generate_slides.py
 
       - name: 發送 LINE 通知
-        run: python scripts/send_notification.py
+        run: python scripts/send_notification_line.py
         env:
           LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
 
@@ -48,25 +48,5 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}    
 
-      - name: 設置 Node.js 環境
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: 安裝 Marp CLI (請忽略此過程）
-        run: npm install -g @marp-team/marp-cli
-
-      - name: 轉換 Markdown 為 PDF (請忽略此過程）
-        run: marp ../data/report.md --pdf --output data/security_report.pdf
-
-      - name: 轉換 Markdown 為 PPTX (請忽略此過程）
-        run: marp ../data/report.md --pptx --output data/security_report.pptx
-
-      - name: 上傳簡報檔案（請忽略此過程）
-        uses: actions/upload-artifact@v4
-        with:
-          name: security_report
-          path: |
-            data/security_report.pdf
-            data/security_report.pptx     
+   
             
