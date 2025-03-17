@@ -47,12 +47,7 @@ def generate_marp_slides():
         "未來趨勢": r"4\.\s\*\*(未來趨勢)\*\*：(.+)",
     }
 
-    markdown_content = """---
-marp: true
-theme: gaia
-paginate: true
----
-
+    markdown_content = """
 # 📢 資安新聞週報
 
 每週精選最新資安新聞摘要 🚀
