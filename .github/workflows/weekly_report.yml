@@ -31,7 +31,7 @@ jobs:
         run: python scripts/fetch_news.py  
 
       - name: 產生新聞摘要（Groq API）
-        run: python scripts/summarize_news.py
+        run: python scripts/summarize_news_groq.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
