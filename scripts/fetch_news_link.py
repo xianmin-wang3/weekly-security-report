@@ -14,7 +14,7 @@ def fetch_news_links():
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
-        news_items = soup.find("div", class_="view-content").find_all("div", class_="views-row", limit=5)
+        news_items = soup.find("div", class_="view-content").find_all("div", class_="views-row", limit=3)
         news_list = []
 
         for item in news_items:
